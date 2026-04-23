@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Yeyian/Desktop/proyectos/tokyoview/tokio/Vue/src/pages/**)"
+    ]
+  }
+}

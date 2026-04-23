@@ -1,0 +1,19 @@
+{
+  "muebles": [
+    { "id": 1, "nombre": "Sofá Nogal 3 plazas", "categoria": "Sala", "precio": 8900, "stock": 5, "descripcion": "Sofá de lino gris con patas de madera de nogal. Comodidad escandinava para tu sala." },
+    { "id": 2, "nombre": "Cama Roble King", "categoria": "Recámara", "precio": 13500, "stock": 3, "descripcion": "Cama de madera de roble macizo con cabecera tapizada en terciopelo azul petróleo." },
+    { "id": 3, "nombre": "Mesa Fresno 6 personas", "categoria": "Comedor", "precio": 7200, "stock": 7, "descripcion": "Mesa extensible en madera de fresno. De 140cm a 200cm. Base sólida estilo industrial." },
+    { "id": 4, "nombre": "Silla Ejecutiva Mesh", "categoria": "Oficina", "precio": 3100, "stock": 10, "descripcion": "Silla ergonómica con respaldo de malla transpirable y soporte lumbar ajustable." },
+    { "id": 5, "nombre": "Librero Oslo 5 niveles", "categoria": "Sala", "precio": 3400, "stock": 4, "descripcion": "Librero abierto de MDF lacado blanco con estructura metálica negra. Estilo nórdico." },
+    { "id": 6, "nombre": "Tocador Venecia", "categoria": "Recámara", "precio": 4800, "stock": 6, "descripcion": "Tocador con espejo LED circular, 3 cajones y soporte para joyería. Acabado blanco mate." },
+    { "id": 7, "nombre": "Sillas Milano (x4)", "categoria": "Comedor", "precio": 3800, "stock": 8, "descripcion": "Juego de 4 sillas tapizadas en bouclé crema con patas de madera. Fácil de limpiar." },
+    { "id": 8, "nombre": "Escritorio Tokio en L", "categoria": "Oficina", "precio": 5600, "stock": 2, "descripcion": "Escritorio en L con cajones, porta-CPU y soporte para monitor. Ideal para home office." },
+    { "id": 9, "nombre": "Sillón Berlín", "categoria": "Sala", "precio": 4200, "stock": 3, "descripcion": "Sillón tapizado en cuero sintético crema, estructura metálica cromada. Ideal para lectura." },
+    { "id": 10, "nombre": "Buró Minimalista", "categoria": "Recámara", "precio": 1900, "stock": 12, "descripcion": "Buró de dos cajones en MDF lacado blanco. Tirador de acero inoxidable." }
+  ],
+  "usuarios": [
+    { "id": 1, "nombre": "Gabriela Montoya", "email": "g.montoya@arboledacasa.mx", "password": "Arboleda2026#", "rol": "admin" },
+    { "id": 2, "nombre": "Carlos Venegas", "email": "cvenegas@gmail.com", "password": "Carlos2026!", "rol": "cliente" }
+  ],
+  "pedidos": []
+}
