@@ -48,45 +48,20 @@
     <!-- APP PRINCIPAL -->
     <template v-else>
 
-      <!-- NAVBAR -->
-      <nav class="navbar">
-        <div class="nav-brand">
-          <div class="brand-logo-sm">AC</div>
-          <div>
-            <div class="brand-name">Arboleda Casa</div>
-            <div class="brand-sub">MUEBLERÍA PREMIUM</div>
-          </div>
-        </div>
-        <div class="nav-cats">
-          <button v-for="cat in categorias" :key="cat"
-            :class="['nav-cat', filtroCategoria===(cat==='Todas'?'':cat)?'active':'']"
-            @click="setCategoria(cat)">{{ cat }}</button>
-        </div>
-        <div class="nav-right">
-          <div class="nav-search">
-            <span>🔍</span>
-            <input v-model="busqueda" placeholder="Buscar mueble...">
-          </div>
-          <button class="btn-cart" @click="modalActivo='carrito'">
-            🛒 <span v-if="totalCarrito>0" class="cart-badge">{{ totalCarrito }}</span>
-          </button>
-          <button v-if="esAdmin" class="btn-nuevo" @click="abrirAdmin(null)">+ Nuevo</button>
-          <div class="nav-user" @click.stop="menuUsuario=!menuUsuario">
-            <div class="user-avatar">{{ usuario.nombre[0] }}</div>
-            <div class="user-info">
-              <div class="user-name">{{ usuario.nombre.split(' ')[0] }}</div>
-              <div :class="['user-rol', usuario.rol]">{{ usuario.rol }}</div>
-            </div>
-            <span>▾</span>
-            <div v-if="menuUsuario" class="user-menu" @click.stop>
-              <div class="user-menu-email">{{ usuario.email }}</div>
-              <div class="user-menu-item" @click="verPedidos">📦 Mis pedidos</div>
-              <div class="user-menu-sep"></div>
-              <div class="user-menu-item danger" @click="cerrarSesion">🚪 Cerrar sesión</div>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <!-- NAVBAR (componente) -->
+      <NavBar
+        :usuario="usuario"
+        :categorias="categorias"
+        :filtro-categoria="filtroCategoria"
+        :total-carrito="totalCarrito"
+        :es-admin="esAdmin"
+        v-model:busqueda="busqueda"
+        @abrir-carrito="modalActivo='carrito'"
+        @set-categoria="setCategoria"
+        @nueva-pieza="abrirAdmin(null)"
+        @ver-pedidos="verPedidos"
+        @cerrar-sesion="cerrarSesion"
+      />
 
       <!-- HERO -->
       <div class="hero">
@@ -122,26 +97,17 @@
           <span class="cat-count">{{ mueblesFiltrados.length }} piezas · {{ filtroCategoria || 'todas las categorías' }}</span>
         </div>
         <div class="grid" v-if="mueblesFiltrados.length">
-          <div class="card" v-for="m in mueblesFiltrados" :key="m.id">
-            <div class="card-img-wrap">
-              <img :src="getImg(m)" :alt="m.nombre" class="card-img" @error="onImgError">
-              <span v-if="m.stock<=3 && m.stock>0" class="badge-stock">Últimas {{ m.stock }}</span>
-              <span v-if="m.stock===0" class="badge-agotado">Agotado</span>
-              <template v-if="esAdmin">
-                <button class="card-del" @click.stop="confirmarEliminar(m)">🗑️</button>
-                <button class="card-edit" @click.stop="abrirAdmin(m)">✏️</button>
-              </template>
-            </div>
-            <div class="card-body">
-              <div class="card-cat">{{ m.categoria }}</div>
-              <div class="card-name">{{ m.nombre }}</div>
-              <div class="card-desc">{{ m.descripcion }}</div>
-              <div class="card-footer">
-                <span class="card-price"><sup>$</sup>{{ m.precio.toLocaleString() }}</span>
-                <button class="card-ver" @click="verDetalle(m)">Ver →</button>
-              </div>
-            </div>
-          </div>
+          <!-- ProductCard (componente) -->
+          <ProductCard
+            v-for="m in mueblesFiltrados"
+            :key="m.id"
+            :mueble="m"
+            :es-admin="esAdmin"
+            @ver-detalle="verDetalle"
+            @agregar-carrito="agregarCarrito"
+            @editar="abrirAdmin"
+            @pedir-eliminar="confirmarEliminar"
+          />
         </div>
         <div v-else class="empty">No se encontraron muebles</div>
       </div>
@@ -175,41 +141,16 @@
         </div>
       </div>
 
-      <!-- MODAL CARRITO -->
-      <div v-if="modalActivo==='carrito'" class="overlay" @click.self="modalActivo=null">
-        <div class="modal-carrito">
-          <div class="modal-header">
-            <h2>🛒 Mi carrito</h2>
-            <button class="modal-close" @click="modalActivo=null">✕</button>
-          </div>
-          <div v-if="carrito.length">
-            <div class="carrito-lista">
-              <div class="carrito-item" v-for="item in carrito" :key="item.id">
-                <img :src="getImg(item)" class="ci-img" @error="onImgError">
-                <div class="ci-info">
-                  <div class="ci-name">{{ item.nombre }}</div>
-                  <div class="ci-price">${{ item.precio.toLocaleString() }} c/u</div>
-                </div>
-                <div class="qty-ctrl">
-                  <button @click="cambiarQty(item,-1)">−</button>
-                  <span>{{ item.qty }}</span>
-                  <button @click="cambiarQty(item,1)">+</button>
-                </div>
-                <div class="ci-sub">${{ (item.precio*item.qty).toLocaleString() }}</div>
-                <button class="ci-del" @click="quitarCarrito(item.id)">✕</button>
-              </div>
-            </div>
-            <div class="carrito-footer">
-              <div class="carrito-total">
-                <span>Total</span>
-                <span class="total-num">${{ totalPrecio.toLocaleString() }}</span>
-              </div>
-              <button class="btn-comprar" @click="iniciarCompra">Proceder al pago →</button>
-            </div>
-          </div>
-          <div v-else class="empty" style="padding:40px">Tu carrito está vacío</div>
-        </div>
-      </div>
+      <!-- MODAL CARRITO (componente) -->
+      <CartModal
+        v-if="modalActivo==='carrito'"
+        :carrito="carrito"
+        :total-precio="totalPrecio"
+        @cerrar="modalActivo=null"
+        @cambiar-qty="cambiarQty"
+        @quitar="quitarCarrito"
+        @iniciar-compra="iniciarCompra"
+      />
 
       <!-- MODAL CHECKOUT -->
       <div v-if="modalActivo==='checkout'" class="overlay" @click.self="modalActivo=null">
@@ -355,47 +296,15 @@
         </div>
       </div>
 
-      <!-- MODAL ADMIN -->
-      <div v-if="modalActivo==='admin' && esAdmin" class="overlay" @click.self="cerrarAdmin">
-        <div class="modal-admin">
-          <div class="modal-header">
-            <h2>{{ editandoId ? '✏️ Editar mueble' : '➕ Nuevo mueble' }}</h2>
-            <button class="modal-close" @click="cerrarAdmin">✕</button>
-          </div>
-          <div class="admin-form">
-            <div class="fgroup">
-              <label>Nombre</label>
-              <input v-model="form.nombre" placeholder="Ej: Sofá moderno">
-            </div>
-            <div class="fgroup">
-              <label>Categoría</label>
-              <select v-model="form.categoria">
-                <option v-for="c in categorias.slice(1)" :key="c">{{ c }}</option>
-              </select>
-            </div>
-            <div class="fgroup">
-              <label>Precio ($)</label>
-              <input v-model.number="form.precio" type="number">
-            </div>
-            <div class="fgroup">
-              <label>Stock</label>
-              <input v-model.number="form.stock" type="number">
-            </div>
-            <div class="fgroup full">
-              <label>Descripción</label>
-              <textarea v-model="form.descripcion"></textarea>
-            </div>
-            <div class="fgroup full">
-              <label>URL de imagen (opcional)</label>
-              <input v-model="form.imagen" placeholder="https://...">
-            </div>
-          </div>
-          <div class="modal-actions">
-            <button class="btn-cerrar" @click="cerrarAdmin">Cancelar</button>
-            <button class="btn-agregar" @click="guardar">💾 Guardar</button>
-          </div>
-        </div>
-      </div>
+      <!-- ADMIN FORM (componente) -->
+      <AdminForm
+        v-if="modalActivo==='admin' && esAdmin"
+        :editando-id="editandoId"
+        :categorias="categorias"
+        :form-inicial="form"
+        @guardar="guardar"
+        @cancelar="cerrarAdmin"
+      />
 
       <!-- MODAL CONFIRMAR ELIMINAR -->
       <div v-if="modalActivo==='confirmar' && confirmItem" class="overlay" @click.self="modalActivo=null">
@@ -416,6 +325,11 @@
 </template>
 
 <script>
+import NavBar from './components/NavBar.vue'
+import ProductCard from './components/ProductCard.vue'
+import CartModal from './components/CartModal.vue'
+import AdminForm from './components/AdminForm.vue'
+
 const API = 'http://localhost:3001'
 const IMGS = {
   'Sala':'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80',
@@ -425,9 +339,10 @@ const IMGS = {
 }
 
 export default {
+  components: { NavBar, ProductCard, CartModal, AdminForm },
   data() {
     return {
-      usuario:null, menuUsuario:false, verPass:false,
+      usuario:null, verPass:false,
       loginForm:{email:'',password:''}, loginError:'', loginCargando:false,
       muebles:[], carrito:[],
       busqueda:'', filtroCategoria:'',
@@ -438,9 +353,7 @@ export default {
         {badge:'RECÁMARAS',titulo:'Tu descanso, nuestro arte',desc:'Camas y accesorios diseñados para el descanso perfecto',cat:'Recámara',img:'https://images.unsplash.com/photo-1540518614846-7eded433c457?w=1400&q=80'},
         {badge:'HOME OFFICE',titulo:'Trabaja con estilo',desc:'Escritorios y sillas ergonómicas para tu oficina en casa',cat:'Oficina',img:'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=1400&q=80'},
       ],
-      stats:[
-       
-      ],
+      stats:[],
       modalActivo:null, muebleDetalle:null, confirmItem:null,
       editandoId:null,
       form:{nombre:'',categoria:'Sala',precio:0,stock:0,descripcion:'',imagen:''},
@@ -462,9 +375,6 @@ export default {
     },
     totalCarrito(){ return this.carrito.reduce((a,c)=>a+c.qty,0) },
     totalPrecio(){ return this.carrito.reduce((a,c)=>a+c.precio*c.qty,0) }
-  },
-  mounted() {
-    document.addEventListener('click', () => { this.menuUsuario = false })
   },
   beforeUnmount() {
     clearInterval(this.slideInterval)
@@ -494,7 +404,7 @@ export default {
     },
     cerrarSesion(){
       clearInterval(this.slideInterval)
-      this.usuario=null; this.carrito=[]; this.menuUsuario=false; this.modalActivo=null
+      this.usuario=null; this.carrito=[]; this.modalActivo=null
     },
     async cargar(){
       try{ const r=await fetch(`${API}/muebles`); this.muebles=await r.json() }
@@ -520,7 +430,7 @@ export default {
       if(item){ item.qty++ } else { this.carrito.push({...m,qty:1}) }
       this.toast(`${m.nombre} agregado al carrito`)
     },
-    cambiarQty(item,d){ item.qty+=d; if(item.qty<=0) this.carrito=this.carrito.filter(x=>x.id!==item.id) },
+    cambiarQty({ item, delta }){ item.qty+=delta; if(item.qty<=0) this.carrito=this.carrito.filter(x=>x.id!==item.id) },
     quitarCarrito(id){ this.carrito=this.carrito.filter(x=>x.id!==id) },
     iniciarCompra(){
       this.checkout.nombre=this.usuario.nombre
@@ -557,7 +467,7 @@ export default {
       } catch(e){ this.toast('⚠️ Error al procesar el pedido') }
       this.comprando=false
     },
-    verPedidos(){ this.menuUsuario=false; this.modalActivo='pedidos' },
+    verPedidos(){ this.modalActivo='pedidos' },
     abrirAdmin(m){
       if(!this.esAdmin) return
       if(m){ this.editandoId=m.id; this.form={...m,imagen:m.imagen||''} }
@@ -565,10 +475,10 @@ export default {
       this.modalActivo='admin'
     },
     cerrarAdmin(){ this.modalActivo=null; this.editandoId=null },
-    async guardar(){
+    async guardar(formData){
       if(!this.esAdmin) return
-      if(!this.form.nombre||!this.form.precio||!this.form.stock){ this.toast('⚠️ Completa los campos'); return }
-      const headers={'Content-Type':'application/json'}; const body=JSON.stringify(this.form)
+      if(!formData.nombre||!formData.precio||!formData.stock){ this.toast('⚠️ Completa los campos'); return }
+      const headers={'Content-Type':'application/json'}; const body=JSON.stringify(formData)
       try{
         if(this.editandoId){ await fetch(`${API}/muebles/${this.editandoId}`,{method:'PUT',headers,body}); this.toast('Mueble actualizado ✓') }
         else { await fetch(`${API}/muebles`,{method:'POST',headers,body}); this.toast('Mueble agregado ✓') }
